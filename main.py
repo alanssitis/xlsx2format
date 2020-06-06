@@ -4,7 +4,6 @@ import os
 from pandas import read_excel
 import csv
 
-"""this is just a check"""
 
 class Check:
     """this class contains methods that returns booleans
