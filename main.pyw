@@ -423,33 +423,13 @@ class Main:
         try:
             self.df = read_excel(self.i_fname)
             self.run(self.file_name, self.df, self.f_type)
-            self.message = "Program ran successfully"
         except:
             self.message = "Failed to operate"
+        else:
+            self.message = "Program ran successfully"
 
 
 class GUI:
-    def __init__(self, master):
-        self.master = master
-
-        # create fixed window in the middle of monitor (hopefully)
-        master.geometry("630x440+400+200")
-        master.resizable(False, False)
-        master.title("CAE para SPEI")
-        self.canvas = Canvas(
-            master,
-            bg='#EAEDED'
-        )
-        self.canvas.place(
-            relx=0, rely=0,
-            relwidth=1, relheight=1
-        )
-
-        # attributes that would be used later down the line
-        self.input_directory = ""
-        self.input_file_name = ""
-        self.compile_type = bool()
-
     def lpanel(self):
         """Method that initiates left panel of application
         """
@@ -666,49 +646,55 @@ class GUI:
                 self.input_display.insert(INSERT, message)
                 self.input_display.config(state=DISABLED)
 
-            def compile_diplay_update(message, clear_box):
+            def compile_diplay_update(message):
                 self.compile_display.config(state=NORMAL)
-                if clear_box == True:
-                    self.compile_display.delete(1.0, END)
+                self.compile_display.delete(1.0, END)
                 self.compile_display.insert(END, message + "\n")
                 self.compile_display.config(state=DISABLED)
 
             def input_button_function():
                 """input button function
                 """
-                filedirectory = askopenfile(filetypes=[('*', '*.xlsx')])
-                if filedirectory is not None:
-                    self.input_directory = str(filedirectory.name)
-                    self.input_file_name = os.path.basename(
-                        self.input_directory)
+                try:
+                    filedirectory = askopenfile(filetypes=[('*', '*.xlsx')])
+                    if filedirectory is not None:
+                        self.input_directory = str(filedirectory.name)
+                        self.input_file_name = os.path.basename(
+                            self.input_directory)
 
-                    input_diplay_update(self.input_file_name)
-                    try:
-                        self.dataframe = read_excel(self.input_directory)
-                        checked_df = Check(self.dataframe)
-                        (self.input_typeCF, pass_format_bool) = checked_df.check_type()
-                        simple_check_boolean = checked_df.simple_check()
-                    except:
-                        simple_check_boolean = None
-                        pass_format_bool = None
+                        input_diplay_update(self.input_file_name)
+                        try:
+                            self.dataframe = read_excel(self.input_directory)
+                            checked_df = Check(self.dataframe)
+                        except:
+                            simple_check_boolean = None
+                            pass_format_bool = None
+                        else:
+                            (self.input_typeCF, pass_format_bool) = checked_df.check_type()
+                            simple_check_boolean = checked_df.simple_check()
 
-                    if simple_check_boolean == False:
-                        compile_diplay_update(
-                            "Input set failed simple format check.\nChoose another file", False)
-                    elif pass_format_bool == False:
-                        compile_diplay_update(
-                            "Input set has some values\nthat are too large.\nChoose another file", False)
+                        if simple_check_boolean == False:
+                            compile_diplay_update(
+                                "Input set failed simple format check.\nChoose another file")
+                        elif pass_format_bool == False:
+                            compile_diplay_update(
+                                "Input set has some values\nthat are too large.\nChoose another file")
 
-                    if simple_check_boolean == True and pass_format_bool == True:
-                        self.choice_txt.config(state=NORMAL)
-                        self.choice_csv.config(state=NORMAL)
+                        if simple_check_boolean == True and pass_format_bool == True:
+                            self.choice_txt.config(state=NORMAL)
+                            self.choice_csv.config(state=NORMAL)
+                        else:
+                            self.choice_txt.config(state=DISABLED)
+                            self.choice_csv.config(state=DISABLED)
+                            self.compile_button.config(state=DISABLED)
+
                     else:
-                        self.choice_txt.config(state=DISABLED)
-                        self.choice_csv.config(state=DISABLED)
-                        self.compile_button.config(state=DISABLED)
-
-                else:
+                        input_diplay_update(self.input_file_name)
+                        compile_diplay_update("No file chosen")
+                
+                except:
                     input_diplay_update(self.input_file_name)
+                    compile_diplay_update("Error ocurred")
 
             comp_type = StringVar()
 
@@ -727,9 +713,9 @@ class GUI:
 
                 if compile_type == True or compile_type == False:
                     process = Main(directory, compile_type)
-                    compile_diplay_update(process.message, True)
+                    compile_diplay_update(process.message)
                 else:
-                    compile_diplay_update("Error happened", True)
+                    compile_diplay_update("Error happened")
 
             # create frame on which all action modules sit
             self.am_panel = LabelFrame(
@@ -856,13 +842,30 @@ class GUI:
 
         instruction()
         action_module()
+    
+    def __init__(self, master):
+        self.master = master
 
+        # create fixed window in the middle of monitor (hopefully)
+        master.geometry("630x440+400+200")
+        master.resizable(False, False)
+        master.title("CAE para SPEI")
+        self.canvas = Canvas(
+            master,
+            bg='#EAEDED'
+        )
+        self.canvas.place(
+            relx=0, rely=0,
+            relwidth=1, relheight=1
+        )
+
+        self.lpanel()
+        self.rpanel()
+    
 
 def main():
     root = Tk()
-    gui = GUI(root)
-    gui.lpanel()
-    gui.rpanel()
+    GUI(root)
     root.mainloop()
 
 
