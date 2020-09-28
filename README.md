@@ -2,7 +2,7 @@
 
 This is an app I made for my mom that would help streamline some of her workflow. Mom, you probably won't see this, but I love you!!!
 
-It is built entirely out of python 3 with tkinter and panda being the only two big modules imported,
+It is built entirely out of python 3 with tkinter and pandas being the only two big modules imported,
 with xlrd and csv imported so that the program is able to read and write the required files.
 
 It is in the format to store bank statements in Mexico, I think.
